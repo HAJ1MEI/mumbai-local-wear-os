@@ -111,6 +111,34 @@ app/src/main/java/com/example/mumbailocalwo/
 
 ---
 
+## 🤖 Automated Upstream Timetable Pipeline (Zero-Cost CI/CD)
+
+The timetable data pipeline runs **fully autonomously** via GitHub Actions with zero server maintenance:
+
+```text
+GitHub Actions Cron (Every 6 Hours)
+       ↓
+Fetch Upstream Mobond OTA package (https://cdn.mobond.com/mi/mumbaidb.zip)
+       ↓
+Inspect version.txt vs published timetable/metadata.json
+       ↓
+If unchanged ──→ Stop (0 compute waste)
+       ↓
+If newer:
+  1. Extract suburban rail binary assets (local/)
+  2. Run extract_mumbai_local_timetable.py
+  3. Run generate_watch_db.py (builds mumbai-watch.db)
+  4. Run validate_watch_db.py (checks PRAGMA integrity, foreign keys, row minimums)
+  5. Calculate SHA-256 and update timetable/metadata.json
+  6. Automatically commit and push to main branch
+```
+
+### Wear OS Client Behavior
+- Update checking on the watch is **strictly on-demand / manual** via **Settings → Check for updates**.
+- **No battery-draining background polling**: The watch avoids running unnecessary background workers or wake locks, preserving smartwatch battery life while ensuring commuters can grab updates whenever desired.
+
+---
+
 ## 📲 Installation
 
 ### Option 1: Download Pre-built APK (Recommended)
