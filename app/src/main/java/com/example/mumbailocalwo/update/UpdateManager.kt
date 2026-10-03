@@ -36,8 +36,9 @@ class UpdateManager(context: Context) {
     val state: StateFlow<UpdateState> = _state.asStateFlow()
 
     suspend fun checkForUpdatesAndApply(): Unit = withContext(Dispatchers.IO) {
-        val currentVersion = database.getMetadataValue("version")
-            ?: preferences.timetableVersion
+        val currentVersion = preferences.timetableVersion.ifBlank {
+            database.getMetadataValue("version") ?: "20260928"
+        }
 
         _state.value = UpdateState.Checking
         Log.i(TAG, "Starting update check. Local version: $currentVersion")
@@ -102,6 +103,7 @@ class UpdateManager(context: Context) {
 
         // 6. Success!
         preferences.timetableVersion = metadata.version
+        database.setMetadataValue("version", metadata.version)
         Log.i(TAG, "Timetable successfully updated to version ${metadata.version}")
         _state.value = UpdateState.Success(metadata.version)
     }

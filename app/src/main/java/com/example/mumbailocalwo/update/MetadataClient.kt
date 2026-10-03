@@ -30,10 +30,12 @@ class MetadataClient(context: Context) {
         withContext(Dispatchers.IO) {
             try {
                 networkGate.withNetwork {
+                    val cacheBusterUrl = if (url.contains("?")) "$url&t=${System.currentTimeMillis()}" else "$url?t=${System.currentTimeMillis()}"
                     val request = Request.Builder()
-                        .url(url)
+                        .url(cacheBusterUrl)
                         .header("User-Agent", USER_AGENT)
-                        .header("Cache-Control", "no-cache")
+                        .header("Cache-Control", "no-cache, no-store, must-revalidate")
+                        .header("Pragma", "no-cache")
                         .get()
                         .build()
 

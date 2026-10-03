@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,17 +58,24 @@ fun SettingsScreen(
     var autoLiveEnabled by remember { mutableStateOf(repo.preferences.autoLiveEnabled) }
     var showClearConfirm by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        val raw = repo.getTimetableVersion()
-        if (raw.length == 8) {
-            try {
-                val date = LocalDate.parse(raw, DateTimeFormatter.ofPattern("yyyyMMdd"))
-                timetableDateText = date.format(DateTimeFormatter.ofPattern("d MMM yyyy"))
-            } catch (_: Exception) {
-                timetableDateText = raw
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val raw = repo.preferences.timetableVersion.ifBlank { "20260928" }
+                timetableDateText = if (raw.length == 8) {
+                    try {
+                        val date = LocalDate.parse(raw, DateTimeFormatter.ofPattern("yyyyMMdd"))
+                        date.format(DateTimeFormatter.ofPattern("d MMM yyyy"))
+                    } catch (_: Exception) {
+                        raw
+                    }
+                } else raw
             }
-        } else {
-            timetableDateText = raw
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 

@@ -226,6 +226,20 @@ class TimetableDatabase private constructor(private val context: Context) {
         }
     }
 
+    /**
+     * Sets or updates a metadata value in the metadata table.
+     */
+    fun setMetadataValue(key: String, value: String) {
+        try {
+            getReadableDatabase()?.execSQL(
+                "INSERT OR REPLACE INTO metadata (key, value) VALUES (?, ?)",
+                arrayOf(key, value)
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to write metadata key: $key", e)
+        }
+    }
+
     fun close() {
         database?.close()
         database = null

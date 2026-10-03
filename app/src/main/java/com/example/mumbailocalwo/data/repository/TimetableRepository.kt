@@ -115,7 +115,8 @@ class TimetableRepository private constructor(context: Context) {
     }
 
     suspend fun getTimetableVersion(): String = withContext(Dispatchers.IO) {
-        database.getMetadataValue("version") ?: "20260928"
+        val prefVer = preferences.timetableVersion
+        if (prefVer.isNotBlank()) prefVer else (database.getMetadataValue("version") ?: "20260928")
     }
 
     fun getDatabaseInstance(): TimetableDatabase = database

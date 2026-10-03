@@ -49,24 +49,32 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val repo = remember { TimetableRepository.getInstance(context) }
     var timetableVersion by remember { mutableStateOf("28 Sep 2026") }
     var isOutdated by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        val repo = TimetableRepository.getInstance(context)
-        val rawVer = repo.getTimetableVersion()
-        // Format YYYYMMDD into "28 Sep 2026"
-        if (rawVer.length == 8) {
-            try {
-                val date = LocalDate.parse(rawVer, DateTimeFormatter.ofPattern("yyyyMMdd"))
-                timetableVersion = date.format(DateTimeFormatter.ofPattern("d MMM yyyy"))
-                val daysOld = ChronoUnit.DAYS.between(date, LocalDate.now())
-                isOutdated = daysOld > 45
-            } catch (_: Exception) {
-                timetableVersion = rawVer
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                val rawVer = repo.preferences.timetableVersion.ifBlank { "20260928" }
+                if (rawVer.length == 8) {
+                    try {
+                        val date = LocalDate.parse(rawVer, DateTimeFormatter.ofPattern("yyyyMMdd"))
+                        timetableVersion = date.format(DateTimeFormatter.ofPattern("d MMM yyyy"))
+                        val daysOld = ChronoUnit.DAYS.between(date, LocalDate.now())
+                        isOutdated = daysOld > 45
+                    } catch (_: Exception) {
+                        timetableVersion = rawVer
+                    }
+                } else {
+                    timetableVersion = rawVer
+                }
             }
-        } else {
-            timetableVersion = rawVer
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 

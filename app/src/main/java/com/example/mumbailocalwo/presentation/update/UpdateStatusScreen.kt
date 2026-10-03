@@ -63,6 +63,12 @@ fun UpdateStatusScreen(
         updateManager.checkForUpdatesAndApply()
     }
 
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose {
+            updateManager.resetState()
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
