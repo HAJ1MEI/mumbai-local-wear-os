@@ -4,6 +4,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-purple.svg)](https://kotlinlang.org/)
 [![Material 3](https://img.shields.io/badge/Material%203-Wear%20Compose-green.svg)](https://developer.android.com/jetpack/compose)
 [![Release](https://img.shields.io/github/v/release/HAJ1MEI/mumbai-local-wear-os?include_prereleases&color=orange)](https://github.com/HAJ1MEI/mumbai-local-wear-os/releases)
+[![Timetable Pipeline](https://github.com/HAJ1MEI/mumbai-local-wear-os/actions/workflows/update_timetable.yml/badge.svg)](https://github.com/HAJ1MEI/mumbai-local-wear-os/actions/workflows/update_timetable.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-brightgreen.svg)](LICENSE)
 
 An offline-first, standalone Wear OS application for Mumbai Suburban Railway commuters. Designed specifically for circular smartwatches with Jetpack Compose for Wear OS and Material 3, delivering sub-second timetable lookups, real-time crowdsourced live tracking, and over-the-air timetable updates.
@@ -136,6 +137,35 @@ If newer:
 ### Wear OS Client Behavior
 - Update checking on the watch is **strictly on-demand / manual** via **Settings → Check for updates**.
 - **No battery-draining background polling**: The watch avoids running unnecessary background workers or wake locks, preserving smartwatch battery life while ensuring commuters can grab updates whenever desired.
+
+### 📊 Viewing Cron Runs, Status & Logs
+
+#### 1. Via Web Browser (GitHub Actions UI)
+- All automated 6-hour cron runs, manual triggers, and execution histories are available at:  
+  👉 **[GitHub Actions — Automated Timetable Update Pipeline](https://github.com/HAJ1MEI/mumbai-local-wear-os/actions/workflows/update_timetable.yml)**
+- Click on any run to inspect:
+  - **Summary**: Upstream version compared, whether an update was required, train/station counts, and SHA-256 checksum.
+  - **Full Step Logs**: Real-time console output from extraction, database generation, and SQLite integrity validation.
+
+#### 2. Via GitHub CLI (`gh`)
+You can monitor and trigger the pipeline directly from your terminal:
+
+```bash
+# List all recent cron and manual runs
+gh run list --workflow=update_timetable.yml
+
+# View the full execution log of a specific run
+gh run view <RUN_ID> --log
+
+# Watch a currently running pipeline in real time
+gh run watch <RUN_ID>
+
+# Trigger a manual update check immediately
+gh workflow run update_timetable.yml
+
+# Force a complete rebuild and publish regardless of version stamp
+gh workflow run update_timetable.yml -f force=true
+```
 
 ---
 
