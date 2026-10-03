@@ -1,0 +1,10 @@
+{
+  "version": "20260928",
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-03T09:06:53.072802+00:00",
+  "trainCount": 3187,
+  "stationCount": 142,
+  "stopEventCount": 53387,
+  "databaseSizeBytes": 4952064,
+  "sha256": "8a3b602db58642c306169c43bcc68e4631158a013f6846a1f204853662ef79e5"
+}
