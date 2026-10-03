@@ -107,9 +107,45 @@ class UpdateManager(context: Context) {
     }
 
     private fun isRemoteVersionNewer(remote: String, local: String): Boolean {
-        val rNum = remote.filter { it.isDigit() }.toLongOrNull() ?: 0L
-        val lNum = local.filter { it.isDigit() }.toLongOrNull() ?: 0L
-        return rNum > lNum
+        val rTrim = remote.trim()
+        val lTrim = local.trim()
+        if (rTrim.equals(lTrim, ignoreCase = true)) return false
+
+        // Try standard date formats
+        val formats = listOf(
+            java.text.SimpleDateFormat("d MMM yyyy", java.util.Locale.ENGLISH),
+            java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.ENGLISH),
+            java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.ENGLISH),
+            java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.ENGLISH)
+        )
+        for (fmt in formats) {
+            try {
+                val rDate = fmt.parse(rTrim)
+                val lDate = fmt.parse(lTrim)
+                if (rDate != null && lDate != null) {
+                    return rDate.after(lDate)
+                }
+            } catch (_: Exception) {}
+        }
+
+        // Try numeric or semver comparison (e.g., 20261003 vs 20260928)
+        val rDigits = rTrim.split(".").mapNotNull { it.filter { c -> c.isDigit() }.toLongOrNull() }
+        val lDigits = lTrim.split(".").mapNotNull { it.filter { c -> c.isDigit() }.toLongOrNull() }
+        if (rDigits.isNotEmpty() && lDigits.isNotEmpty() && rDigits.size == lDigits.size) {
+            for (i in rDigits.indices) {
+                if (rDigits[i] > lDigits[i]) return true
+                if (rDigits[i] < lDigits[i]) return false
+            }
+            return false
+        }
+
+        val rNum = rTrim.filter { it.isDigit() }.toLongOrNull() ?: 0L
+        val lNum = lTrim.filter { it.isDigit() }.toLongOrNull() ?: 0L
+        if (rNum != lNum) {
+            return rNum > lNum
+        }
+
+        return rTrim.isNotBlank() && rTrim != lTrim
     }
 
     fun resetState() {
