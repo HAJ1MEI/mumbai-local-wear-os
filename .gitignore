@@ -12,3 +12,5 @@ local.properties
 *.apk
 *.aab
 screen.png
+__pycache__/
+*.pyc

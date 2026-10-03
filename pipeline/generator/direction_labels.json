@@ -1,0 +1,84 @@
+{
+  "C": {
+    "UP": {
+      "label": "Towards CSMT",
+      "short_label": "To CSMT",
+      "arrow": "UP"
+    },
+    "DOWN": {
+      "label": "Towards Kalyan / Karjat / Kasara / Khopoli",
+      "short_label": "To Kalyan / Kasara",
+      "arrow": "DOWN"
+    }
+  },
+  "W": {
+    "UP": {
+      "label": "Towards Churchgate",
+      "short_label": "To Churchgate",
+      "arrow": "UP"
+    },
+    "DOWN": {
+      "label": "Towards Borivali / Bhayandar / Virar / Dahanu",
+      "short_label": "To Borivali / Virar",
+      "arrow": "DOWN"
+    }
+  },
+  "H": {
+    "UP": {
+      "label": "Towards CSMT",
+      "short_label": "To CSMT",
+      "arrow": "UP"
+    },
+    "DOWN": {
+      "label": "Towards Panvel / Belapur / Vashi",
+      "short_label": "To Panvel / Vashi",
+      "arrow": "DOWN"
+    },
+    "NEUTRAL": {
+      "label": "Towards Goregaon (via Bandra / Andheri)",
+      "short_label": "To Goregaon",
+      "arrow": "BOTH"
+    },
+    "SPECIAL": {
+      "label": "Towards Panvel (from Goregaon)",
+      "short_label": "To Panvel",
+      "arrow": "BOTH"
+    }
+  },
+  "T": {
+    "UP": {
+      "label": "Towards Thane",
+      "short_label": "To Thane",
+      "arrow": "UP"
+    },
+    "DOWN": {
+      "label": "Towards Vashi / Panvel",
+      "short_label": "To Vashi / Panvel",
+      "arrow": "DOWN"
+    }
+  },
+  "U": {
+    "UP": {
+      "label": "Towards Nerul / Belapur",
+      "short_label": "To Nerul / Belapur",
+      "arrow": "UP"
+    },
+    "DOWN": {
+      "label": "Towards Kharkopar / Uran",
+      "short_label": "To Kharkopar / Uran",
+      "arrow": "DOWN"
+    }
+  },
+  "DVP": {
+    "UP": {
+      "label": "Towards Diva / Panvel",
+      "short_label": "To Diva / Panvel",
+      "arrow": "UP"
+    },
+    "DOWN": {
+      "label": "Towards Vasai Road / Roha",
+      "short_label": "To Vasai Road",
+      "arrow": "DOWN"
+    }
+  }
+}
