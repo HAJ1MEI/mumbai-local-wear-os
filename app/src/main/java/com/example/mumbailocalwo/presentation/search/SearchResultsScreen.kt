@@ -128,22 +128,32 @@ fun SearchResultsScreen(
         if (repo.preferences.autoLiveEnabled) {
             refreshLive(activeOrigin, lines)
         }
-
-        // Auto-scroll to next train
-        val nextIdx = list.indexOfFirst { it.isNext }
-        if (nextIdx != -1) {
-            scope.launch {
-                val headerOffset = if (via != null) 3 else 2
-                listState.animateScrollToItem(nextIdx + headerOffset)
-            }
-        }
     }
 
     val filteredList = remember(allResults, filter) {
-        if (filter == null) {
+        val baseList = if (filter == null) {
             allResults
         } else {
             allResults.filter { filter!!.matches(it.train) }
+        }
+        val nextIdx = baseList.indexOfFirst { !it.isPast && it.isRunningToday }
+        if (nextIdx != -1) {
+            baseList.mapIndexed { index, item ->
+                if (index == nextIdx) item.copy(isNext = true)
+                else if (item.isNext) item.copy(isNext = false)
+                else item
+            }
+        } else {
+            baseList.map { if (it.isNext) it.copy(isNext = false) else it }
+        }
+    }
+
+    LaunchedEffect(filter, allResults) {
+        if (filteredList.isNotEmpty()) {
+            val nextIdx = filteredList.indexOfFirst { it.isNext }
+            val headerOffset = if (interchangeStation != null) 3 else 2
+            val targetIdx = if (nextIdx != -1) nextIdx + headerOffset else 0
+            listState.scrollToItem(targetIdx)
         }
     }
 

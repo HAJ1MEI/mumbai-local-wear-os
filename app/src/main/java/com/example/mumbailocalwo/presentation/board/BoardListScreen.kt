@@ -106,22 +106,31 @@ fun BoardListScreen(
             // One automatic live fetch
             refreshLive(st)
         }
-
-        // Auto-scroll to the next train
-        val nextIdx = list.indexOfFirst { it.isNext }
-        if (nextIdx != -1) {
-            // Offset for header items (title + refresh row)
-            scope.launch {
-                listState.animateScrollToItem(nextIdx + 2)
-            }
-        }
     }
 
     val filteredList = remember(allTrains, filter) {
-        if (filter == null) {
+        val baseList = if (filter == null) {
             allTrains
         } else {
             allTrains.filter { filter!!.matches(it.train) }
+        }
+        val nextIdx = baseList.indexOfFirst { !it.isPast && it.isRunningToday }
+        if (nextIdx != -1) {
+            baseList.mapIndexed { index, item ->
+                if (index == nextIdx) item.copy(isNext = true)
+                else if (item.isNext) item.copy(isNext = false)
+                else item
+            }
+        } else {
+            baseList.map { if (it.isNext) it.copy(isNext = false) else it }
+        }
+    }
+
+    LaunchedEffect(filter, allTrains) {
+        if (filteredList.isNotEmpty()) {
+            val nextIdx = filteredList.indexOfFirst { it.isNext }
+            val targetIdx = if (nextIdx != -1) nextIdx + 2 else 0
+            listState.scrollToItem(targetIdx)
         }
     }
 
