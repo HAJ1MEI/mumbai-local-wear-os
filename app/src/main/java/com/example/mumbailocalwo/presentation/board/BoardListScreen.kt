@@ -32,7 +32,10 @@ import androidx.compose.ui.unit.sp
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
+import androidx.wear.compose.material3.SurfaceTransformation
 import androidx.wear.compose.material3.Text
+import androidx.wear.compose.material3.lazy.rememberTransformationSpec
+import androidx.wear.compose.material3.lazy.transformedHeight
 import com.example.mumbailocalwo.data.model.BoardingTrain
 import com.example.mumbailocalwo.data.model.Station
 import com.example.mumbailocalwo.data.repository.TimetableRepository
@@ -63,6 +66,7 @@ fun BoardListScreen(
     val scope = rememberCoroutineScope()
     val repo = remember { TimetableRepository.getInstance(context) }
     val listState = rememberTransformingLazyColumnState()
+    val transformationSpec = rememberTransformationSpec()
 
     var station by remember { mutableStateOf<Station?>(null) }
     var allTrains by remember { mutableStateOf<List<BoardingTrain>>(emptyList()) }
@@ -141,8 +145,8 @@ fun BoardListScreen(
             state = listState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                start = 10.dp,
-                end = 10.dp,
+                start = 8.dp,
+                end = 8.dp,
                 top = 44.dp,
                 bottom = 58.dp
             ),
@@ -245,7 +249,11 @@ fun BoardListScreen(
                     liveState = liveState,
                     onClick = {
                         onTrainClick(item.train.id, stationId)
-                    }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .transformedHeight(this, transformationSpec),
+                    transformation = SurfaceTransformation(transformationSpec)
                 )
             }
 
