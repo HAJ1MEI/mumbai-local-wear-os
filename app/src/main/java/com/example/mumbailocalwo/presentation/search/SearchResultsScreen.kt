@@ -39,11 +39,11 @@ import com.example.mumbailocalwo.data.model.Station
 import com.example.mumbailocalwo.data.repository.TimetableRepository
 import com.example.mumbailocalwo.live.LiveCache
 import com.example.mumbailocalwo.live.model.LiveStatus
-import com.example.mumbailocalwo.presentation.components.FilterSheet
 import com.example.mumbailocalwo.presentation.components.LiveChipState
 import com.example.mumbailocalwo.presentation.components.MessageState
 import com.example.mumbailocalwo.presentation.components.RefreshButton
 import com.example.mumbailocalwo.presentation.components.TrainFilter
+import com.example.mumbailocalwo.presentation.components.TrainFilterBar
 import com.example.mumbailocalwo.presentation.components.TrainRow
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -70,8 +70,7 @@ fun SearchResultsScreen(
     var interchangeStation by remember { mutableStateOf<Station?>(null) }
     var selectedLeg by remember { mutableIntStateOf(1) } // 1: Origin -> Interchange, 2: Interchange -> Destination
     var allResults by remember { mutableStateOf<List<SearchResult>>(emptyList()) }
-    var filter by remember { mutableStateOf(TrainFilter.ALL) }
-    var showFilterSheet by remember { mutableStateOf(false) }
+    var filter by remember { mutableStateOf<TrainFilter?>(null) }
 
     var isLiveLoading by remember { mutableStateOf(false) }
     var lastLiveFetchMillis by remember { mutableLongStateOf(0L) }
@@ -140,40 +139,29 @@ fun SearchResultsScreen(
         }
     }
 
-    if (showFilterSheet) {
-        FilterSheet(
-            currentFilter = filter,
-            onFilterSelected = {
-                filter = it
-                showFilterSheet = false
-            }
-        )
-        return
-    }
-
     val filteredList = remember(allResults, filter) {
-        when (filter) {
-            TrainFilter.ALL -> allResults
-            TrainFilter.AC_ONLY -> allResults.filter { it.train.isAC }
-            TrainFilter.FAST_ONLY -> allResults.filter { it.train.trainType.equals("FAST", ignoreCase = true) }
-            TrainFilter.SLOW_ONLY -> allResults.filter { it.train.trainType.equals("SLOW", ignoreCase = true) }
+        if (filter == null) {
+            allResults
+        } else {
+            allResults.filter { filter!!.matches(it.train) }
         }
     }
 
     val anyLineLiveSupported = allResults.any { repo.liveClient.isLineSupported(it.train.lineCode) }
 
-    TransformingLazyColumn(
-        state = listState,
-        modifier = modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(
-            start = 10.dp,
-            end = 10.dp,
-            top = 48.dp,
-            bottom = 52.dp
-        ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
+    Box(modifier = modifier.fillMaxSize()) {
+        TransformingLazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                start = 10.dp,
+                end = 10.dp,
+                top = 44.dp,
+                bottom = 58.dp
+            ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
         // Header
         item {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -268,26 +256,11 @@ fun SearchResultsScreen(
                     Text(text = "Schedule only", fontSize = 11.sp, color = Color(0xFF9E9E9E))
                 }
 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF262626))
-                        .clickable { showFilterSheet = true }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    val filterLabel = when (filter) {
-                        TrainFilter.ALL -> "All ▾"
-                        TrainFilter.AC_ONLY -> "AC ▾"
-                        TrainFilter.FAST_ONLY -> "Fast ▾"
-                        TrainFilter.SLOW_ONLY -> "Slow ▾"
-                    }
-                    Text(
-                        text = filterLabel,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF4FC3F7)
-                    )
-                }
+                Text(
+                    text = "${filteredList.size} trains",
+                    fontSize = 11.sp,
+                    color = Color(0xFF8E8E93)
+                )
             }
         }
 
@@ -297,7 +270,7 @@ fun SearchResultsScreen(
                 MessageState(
                     iconText = "🔍",
                     title = "No trains found",
-                    detail = if (filter != TrainFilter.ALL) "No trains match the filter." else "No direct trains scheduled today."
+                    detail = if (filter != null) "No ${filter?.name?.lowercase()} trains match." else "No direct trains scheduled today."
                 )
             }
         }
@@ -340,7 +313,15 @@ fun SearchResultsScreen(
         }
 
         item {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(28.dp))
         }
     }
+
+    TrainFilterBar(
+        selectedFilter = filter,
+        onFilterSelected = { filter = it },
+        modifier = Modifier.align(Alignment.BottomCenter)
+    )
 }
+}
+
