@@ -3,8 +3,8 @@ package com.example.mumbailocalwo.presentation.search
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,15 +29,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
+import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.Text
 import com.example.mumbailocalwo.data.model.Station
 import com.example.mumbailocalwo.data.repository.TimetableRepository
 import com.example.mumbailocalwo.presentation.components.LineDot
+import com.example.mumbailocalwo.presentation.components.appDrawerScale
 import kotlinx.coroutines.launch
 
 /**
  * Screen 4: Station Picker (shared for FROM, TO, and BOARD).
  * Lists recent stations, all stations alphabetically, and line indicators.
+ * Uses slim, compact rows with smooth Wear OS app-drawer style decremental scaling.
  */
 @Composable
 fun StationPickerScreen(
@@ -48,6 +51,7 @@ fun StationPickerScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val repo = remember { TimetableRepository.getInstance(context) }
+    val listState = rememberTransformingLazyColumnState()
 
     var allStations by remember { mutableStateOf<List<Station>>(emptyList()) }
     var recentStations by remember { mutableStateOf<List<Station>>(emptyList()) }
@@ -83,11 +87,12 @@ fun StationPickerScreen(
     }
 
     TransformingLazyColumn(
+        state = listState,
         modifier = modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(
-            start = 10.dp,
-            end = 10.dp,
-            top = 48.dp,
+        contentPadding = PaddingValues(
+            start = 8.dp,
+            end = 8.dp,
+            top = 44.dp,
             bottom = 52.dp
         ),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -161,7 +166,7 @@ fun StationPickerScreen(
         }
 
         item {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -169,16 +174,18 @@ fun StationPickerScreen(
 @Composable
 private fun StationPickerRow(
     station: Station,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val shape = RoundedCornerShape(10.dp)
+    val shape = RoundedCornerShape(12.dp)
     Row(
-        modifier = Modifier
-            .fillMaxWidth(0.88f)
+        modifier = modifier
+            .appDrawerScale()
+            .fillMaxWidth(0.90f)
             .clip(shape)
-            .background(Color(0xFF1F1F1F))
+            .background(Color(0xFF1E2024))
             .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 7.dp),
+            .padding(horizontal = 12.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -186,7 +193,7 @@ private fun StationPickerRow(
             Text(
                 text = station.name,
                 fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.SemiBold,
                 color = Color.White
             )
             if (!station.marathiName.isNullOrBlank()) {
@@ -198,7 +205,10 @@ private fun StationPickerRow(
             }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             for (line in station.lineCodes) {
                 LineDot(lineCode = line, size = 8.dp)
             }

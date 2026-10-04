@@ -3,8 +3,7 @@ package com.example.mumbailocalwo.presentation.direction
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,16 +28,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
+import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.Text
 import com.example.mumbailocalwo.data.model.Station
 import com.example.mumbailocalwo.data.model.StationDirectionOption
 import com.example.mumbailocalwo.data.repository.TimetableRepository
 import com.example.mumbailocalwo.presentation.components.LineDot
 import com.example.mumbailocalwo.presentation.components.MessageState
+import com.example.mumbailocalwo.presentation.components.appDrawerScale
 
 /**
  * Screen 6: Direction Selector (Board Train, step 2).
  * Grouped by railway line with commuter-friendly direction labels ("Towards CSMT").
+ * Uses slim, compact cards with smooth Wear OS app-drawer style decremental scaling.
  */
 @Composable
 fun DirectionScreen(
@@ -48,6 +50,7 @@ fun DirectionScreen(
 ) {
     val context = LocalContext.current
     val repo = remember { TimetableRepository.getInstance(context) }
+    val listState = rememberTransformingLazyColumnState()
 
     var station by remember { mutableStateOf<Station?>(null) }
     var directions by remember { mutableStateOf<List<StationDirectionOption>>(emptyList()) }
@@ -74,15 +77,16 @@ fun DirectionScreen(
     val showLineHeaders = grouped.size > 1
 
     TransformingLazyColumn(
+        state = listState,
         modifier = modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(
-            start = 10.dp,
-            end = 10.dp,
-            top = 48.dp,
+        contentPadding = PaddingValues(
+            start = 8.dp,
+            end = 8.dp,
+            top = 44.dp,
             bottom = 52.dp
         ),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         item {
             Text(
@@ -100,7 +104,7 @@ fun DirectionScreen(
                     val lineName = options.firstOrNull()?.lineName ?: lineCode
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth(0.88f)
+                            .fillMaxWidth(0.90f)
                             .padding(top = 4.dp, bottom = 2.dp, start = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -127,7 +131,7 @@ fun DirectionScreen(
         }
 
         item {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -135,7 +139,8 @@ fun DirectionScreen(
 @Composable
 private fun DirectionChip(
     option: StationDirectionOption,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val arrowSymbol = when (option.arrow) {
         "UP" -> "◀"
@@ -144,31 +149,28 @@ private fun DirectionChip(
     }
 
     val shape = RoundedCornerShape(12.dp)
-    Box(
-        modifier = Modifier
-            .fillMaxWidth(0.88f)
+    Row(
+        modifier = modifier
+            .appDrawerScale()
+            .fillMaxWidth(0.90f)
             .clip(shape)
-            .background(Color(0xFF1F1F1F))
+            .background(Color(0xFF1E2024))
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = arrowSymbol,
-                fontSize = 14.sp,
-                color = Color(0xFF4FC3F7)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = option.label,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.White,
-                lineHeight = 16.sp
-            )
-        }
+        Text(
+            text = arrowSymbol,
+            fontSize = 13.sp,
+            color = Color(0xFF4FC3F7)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = option.label,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.White,
+            lineHeight = 16.sp
+        )
     }
 }

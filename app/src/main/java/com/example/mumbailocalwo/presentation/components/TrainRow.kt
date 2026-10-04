@@ -1,11 +1,11 @@
 package com.example.mumbailocalwo.presentation.components
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,14 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.wear.compose.material3.Card
-import androidx.wear.compose.material3.CardDefaults
-import androidx.wear.compose.material3.SurfaceTransformation
 import androidx.wear.compose.material3.Text
 import com.example.mumbailocalwo.data.model.Train
 import com.example.mumbailocalwo.presentation.theme.NotRunningAmberColor
@@ -32,8 +30,7 @@ import com.example.mumbailocalwo.presentation.theme.PrimaryAccent
 import com.example.mumbailocalwo.presentation.theme.trainTypeColor
 
 /**
- * C1. TrainRow: Wear OS Material 3 transformed card component for train lists.
- * Styled like the native Wear OS app drawer with dynamic center scaling and curved bezel morphing.
+ * C1. TrainRow: slim, compact Wear OS card component with app drawer decremental scaling.
  */
 @Composable
 fun TrainRow(
@@ -47,28 +44,35 @@ fun TrainRow(
     countdownText: String?,
     liveState: LiveChipState,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    transformation: SurfaceTransformation? = null
+    modifier: Modifier = Modifier
 ) {
     val isCancelled = (liveState as? LiveChipState.Live)?.status?.isCancelled == true
     val opacity = if (!isRunningToday || isCancelled) 0.55f else 1.0f
+    val shape = RoundedCornerShape(14.dp)
     val cardBackground = if (isNext) Color(0xFF162534) else Color(0xFF1E2024)
-    val cardBorder = if (isNext) BorderStroke(1.5.dp, PrimaryAccent) else null
 
-    Card(
-        onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .alpha(opacity),
-        transformation = transformation,
-        colors = CardDefaults.cardColors(
-            containerColor = cardBackground,
-            contentColor = Color.White
-        ),
-        border = cardBorder,
-        shape = RoundedCornerShape(22.dp),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 7.dp)
-    ) {
+    var boxModifier = modifier
+        .appDrawerScale()
+        .fillMaxWidth(0.90f)
+        .alpha(opacity)
+        .clip(shape)
+        .background(cardBackground)
+        .clickable(onClick = onClick)
+        .padding(horizontal = 10.dp, vertical = 7.dp)
+
+    if (isNext) {
+        boxModifier = modifier
+            .appDrawerScale()
+            .fillMaxWidth(0.90f)
+            .alpha(opacity)
+            .clip(shape)
+            .border(1.5.dp, PrimaryAccent, shape)
+            .background(cardBackground)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 7.dp)
+    }
+
+    Box(modifier = boxModifier) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // Next banner header if isNext
             if (isNext && countdownText != null) {
